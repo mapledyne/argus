@@ -1,21 +1,18 @@
 """
 Argus - A diagnostics and logging module.
 
-This package provides a robust logging and diagnostics system with performance 
-monitoring capabilities. It offers a flexible and extensible way to track 
-application behavior, system metrics, and debug information.
+This package provides a \logging and diagnostics system.
 
 Quick Start:
-    >>> import k_diagnostics as diag
-    >>> diag.info("Application started")
-    >>> diag.debug(f"Memory usage: {diag.Metrics.memory_usage():.2f} MB")
+    >>> import argus as diagnostics
+    >>> diagnostics.info("Application started")
+    >>> diagnostics.debug(f"Memory usage: {diagnostics.Metrics.memory_usage():.2f} MB")
     
-    >>> @diag.log_timing
+    >>> @diagnostics.log_timing
     >>> def my_function():
     ...     pass
 
 Key Features:
-- System metrics collection (memory, CPU, thread count, uptime) [requires psutil]
 - Flexible logging system with file and console output
 - Function call logging and timing decorators
 - Debug function registration and execution
@@ -30,10 +27,7 @@ from .diagnostics import (
     error,
     critical,
     log,
-    
-    # System metrics
-    Metrics,
-    
+        
     # Decorators
     log_function_call,
     log_timing,
@@ -53,18 +47,12 @@ from .diagnostics import (
     cleanup_logs,
     running_under_unittest,
     current_log_dir,
-    
-    # Constants and state
-    PSUTIL_AVAILABLE
 )
 
 # Convenience imports for common use cases
 __all__ = [
     # Logging functions
     'debug', 'info', 'warning', 'error', 'critical', 'log',
-    
-    # Metrics
-    'Metrics',
     
     # Decorators
     'log_function_call', 'log_timing', 'deprecated',
@@ -77,9 +65,6 @@ __all__ = [
     
     # Utilities
     'cleanup_logs', 'running_under_unittest', 'current_log_dir',
-    
-    # State
-    'PSUTIL_AVAILABLE',
 ]
 
 # Version information

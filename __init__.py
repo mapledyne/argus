@@ -1,78 +1,74 @@
-"""
-Argus - A diagnostics and logging module.
+"""A comprehensive diagnostics and logging module.
 
-This package provides a \logging and diagnostics system.
+This module provides a logging and diagnostics system.
 
-Quick Start:
-    >>> import argus as diagnostics
-    >>> diagnostics.info("Application started")
-    >>> diagnostics.debug(f"Memory usage: {diagnostics.Metrics.memory_usage():.2f} MB")
-    
-    >>> @diagnostics.log_timing
-    >>> def my_function():
-    ...     pass
-
-Key Features:
+Key features:
 - Flexible logging system with file and console output
 - Function call logging and timing decorators
 - Debug function registration and execution
 - Log rotation and cleanup functionality
+
+The logging system supports both file and console output with customizable log 
+levels and formats. All logs include detailed caller information (module, 
+function, line number) for better traceability. Logs to console are human 
+readable, but the file output is in JSON format.
+
+Example usage:
+    >>> import argus as diagnostics
+    >>> diagnostics.info("Application started")
+    >>> @diagnostics.log_timing
+    >>> def my_function():
+    ...     pass
 """
 
-from .diagnostics import (
-    # Core logging functions
-    debug,
-    info,
-    warning,
-    error,
-    critical,
-    log,
-        
-    # Decorators
-    log_function_call,
-    log_timing,
-    deprecated,
-    
-    # Configuration functions
-    log_level,
-    max_logs,
-    set_log_directory,
-    get_log_directory,
-    
-    # Debug function management
-    register_debug_function,
-    run_debug_functions,
-    
-    # Utility functions
-    cleanup_logs,
-    running_under_unittest,
-    current_log_dir,
+# Import core logging functions
+from .log_functions import (
+    debug, info, warning, error, critical, log, 
+    log_function_call, log_timing, deprecated
 )
 
-# Convenience imports for common use cases
+# Import utility functions
+from .utils import (
+    set_log_directory,
+    get_log_directory,
+    register_debug_function,
+    max_logs,
+    log_level,
+    enable_console_logging,
+    disable_console_logging
+)
+
+# Import the logger
+from .utils import logger
+
+# Version information
+__version__ = "2.0.0"
+__author__ = "Michael Knowles"
+__description__ = "A logging module."
+
+import logging
+
+
+# Export all public API
 __all__ = [
-    # Logging functions
+    # Core logging functions
     'debug', 'info', 'warning', 'error', 'critical', 'log',
-    
+
     # Decorators
     'log_function_call', 'log_timing', 'deprecated',
     
-    # Configuration
-    'log_level', 'max_logs', 'set_log_directory', 'get_log_directory',
+    # Utility functions
+    'set_log_directory', 'get_log_directory', 'register_debug_function',
+    'max_logs', 'log_level', 'enable_console_logging',
+    'disable_console_logging',
     
-    # Debug management
-    'register_debug_function', 'run_debug_functions',
+    # Advanced usage
+    'logger',
     
-    # Utilities
-    'cleanup_logs', 'running_under_unittest', 'current_log_dir',
+    # Metadata
+    '__version__', '__author__', '__description__'
 ]
 
-# Version information
-__version__ = "1.1.0"
-__author__ = "Michael Knowles"
-__description__ = "A diagnostics and logging module"
-
-# Convenience aliases for common logging levels
 import logging
 DEBUG = logging.DEBUG
 INFO = logging.INFO

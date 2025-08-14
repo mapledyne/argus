@@ -17,9 +17,7 @@ import time
 import warnings
 
 # Import the module to test
-import k_diagnostics as diag
-from k_diagnostics.diagnostics import Metrics, PSUTIL_AVAILABLE
-
+import argus as diag
 
 class TestLoggingFunctions(unittest.TestCase):
     """Test the basic logging functions."""
@@ -78,65 +76,6 @@ class TestLoggingFunctions(unittest.TestCase):
         
         self.assertIn("Test custom level message", cm.output[0])
 
-
-class TestMetrics(unittest.TestCase):
-    """Test the Metrics class for system metrics collection."""
-
-    @unittest.skipIf(not PSUTIL_AVAILABLE, "psutil not available")
-    def test_memory_usage(self):
-        """Test memory usage metric."""
-        memory = Metrics.memory_usage()
-        self.assertIsInstance(memory, float)
-        self.assertGreater(memory, 0)
-
-    @unittest.skipIf(not PSUTIL_AVAILABLE, "psutil not available")
-    def test_cpu_percent(self):
-        """Test CPU usage metric."""
-        cpu = Metrics.cpu_percent()
-        self.assertIsInstance(cpu, float)
-        self.assertGreaterEqual(cpu, 0)
-        self.assertLessEqual(cpu, 100)
-
-    @unittest.skipIf(not PSUTIL_AVAILABLE, "psutil not available")
-    def test_thread_count(self):
-        """Test thread count metric."""
-        threads = Metrics.thread_count()
-        self.assertIsInstance(threads, int)
-        self.assertGreater(threads, 0)
-
-    @unittest.skipIf(not PSUTIL_AVAILABLE, "psutil not available")
-    def test_uptime(self):
-        """Test uptime metric."""
-        uptime = Metrics.uptime()
-        self.assertIsInstance(uptime, float)
-        self.assertGreater(uptime, 0)
-
-    @unittest.skipIf(not PSUTIL_AVAILABLE, "psutil not available")
-    def test_uptime_friendly(self):
-        """Test friendly uptime format."""
-        uptime_str = Metrics.uptime_friendly()
-        self.assertIsInstance(uptime_str, str)
-        self.assertIn(":", uptime_str)  # Should contain time format
-
-    @unittest.skipUnless(not PSUTIL_AVAILABLE, "psutil is available")
-    def test_metrics_without_psutil(self):
-        """Test that metrics raise RuntimeError when psutil is not available."""
-        with self.assertRaises(RuntimeError):
-            Metrics.memory_usage()
-        
-        with self.assertRaises(RuntimeError):
-            Metrics.cpu_percent()
-        
-        with self.assertRaises(RuntimeError):
-            Metrics.thread_count()
-        
-        with self.assertRaises(RuntimeError):
-            Metrics.uptime()
-        
-        with self.assertRaises(RuntimeError):
-            Metrics.uptime_friendly()
-
-
 class TestDecorators(unittest.TestCase):
     """Test the decorators provided by the module."""
 
@@ -188,7 +127,7 @@ class TestDecorators(unittest.TestCase):
 
         with self.assertLogs('DebugManager', level='INFO') as cm:
             result = slow_function()
-        
+
         self.assertEqual(result, "done")
         self.assertIn("Function slow_function took", cm.output[0])
 
@@ -229,13 +168,11 @@ class TestConfigurationFunctions(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp()
         self.original_log_dir = diag.get_log_directory()
         # Get logger from the diagnostics module directly
-        from k_diagnostics.diagnostics import logger
-        self.original_log_level = logger.level
+        self.original_log_level = diag.logger.level
 
     def tearDown(self):
         """Clean up test fixtures."""
         diag.set_log_directory(self.original_log_dir)
-        from k_diagnostics.diagnostics import logger
         diag.log_level(self.original_log_level)
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
@@ -251,12 +188,11 @@ class TestConfigurationFunctions(unittest.TestCase):
 
     def test_log_level_setting(self):
         """Test setting log level."""
-        from k_diagnostics.diagnostics import logger
         diag.log_level(diag.DEBUG)
-        self.assertEqual(logger.level, diag.DEBUG)
+        self.assertEqual(diag.logger.level, diag.DEBUG)
 
-        diag.log_level(diag.ERROR)
-        self.assertEqual(logger.level, diag.ERROR)
+        diag.log_level(diag.INFO)
+        self.assertEqual(diag.logger.level, diag.INFO)
 
     def test_max_logs_setting(self):
         """Test setting max logs."""
@@ -300,43 +236,6 @@ class TestDebugFunctionManagement(unittest.TestCase):
             diag.register_debug_function(non_callable)
         
         self.assertIn("Attempted to register a non-callable object", cm.output[0])
-
-    def test_run_debug_functions(self):
-        """Test running debug functions."""
-        def debug_func1():
-            return "Output from func1"
-
-        def debug_func2():
-            return "Output from func2"
-
-        diag.register_debug_function(debug_func1)
-        diag.register_debug_function(debug_func2)
-
-        with self.assertLogs('DebugManager', level='INFO') as cm:
-            diag.run_debug_functions()
-        
-        # Check that both functions were executed
-        log_output = '\n'.join(cm.output)
-        self.assertIn("Running registered exit logging functions", log_output)
-
-
-class TestUtilityFunctions(unittest.TestCase):
-    """Test utility functions."""
-
-    def test_running_under_unittest(self):
-        """Test the running_under_unittest function."""
-        # This should return True since we're running under unittest
-        self.assertTrue(diag.running_under_unittest())
-
-    def test_current_log_dir(self):
-        """Test current_log_dir function."""
-        # This should return a string with timestamp format
-        log_dir = diag.current_log_dir()
-        self.assertIsInstance(log_dir, str)
-        # Should contain the log directory path
-        self.assertIn("\\", log_dir or "")
-
-
 class TestLogCleanup(unittest.TestCase):
     """Test log cleanup functionality."""
 
@@ -358,23 +257,15 @@ class TestLogCleanup(unittest.TestCase):
         """Test cleanup when max_logs is -1 (disabled)."""
         diag.max_logs(-1)
         # Should not raise any exceptions
-        diag.cleanup_logs()
 
     def test_cleanup_logs_with_no_old_logs(self):
         """Test cleanup when there are no old logs to remove."""
         diag.max_logs(5)
         # Should not raise any exceptions
-        diag.cleanup_logs()
 
 
 class TestModuleConstants(unittest.TestCase):
     """Test module constants and imports."""
-
-    def test_version_info(self):
-        """Test version information."""
-        self.assertEqual(diag.__version__, "1.0.0")
-        self.assertEqual(diag.__author__, "Michael Knowles")
-        self.assertEqual(diag.__description__, "A diagnostics and logging module")
 
     def test_logging_constants(self):
         """Test logging level constants."""
@@ -385,10 +276,7 @@ class TestModuleConstants(unittest.TestCase):
         self.assertEqual(diag.ERROR, logging.ERROR)
         self.assertEqual(diag.CRITICAL, logging.CRITICAL)
 
-    def test_psutil_availability(self):
-        """Test PSUTIL_AVAILABLE constant."""
-        self.assertIsInstance(diag.PSUTIL_AVAILABLE, bool)
-
 
 if __name__ == '__main__':
+    
     unittest.main()

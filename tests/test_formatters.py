@@ -61,14 +61,17 @@ class TestJSONFormatter(unittest.TestCase):
         record.caller_lineno = 15
         
         # Add extra fields
-        record.user_id = 123
-        record.action = "login"
+        record.extra_data = {
+            "user_id": 123, 
+            "action": "login"
+        }
         
         formatted = self.formatter.format(record)
         parsed = json.loads(formatted)
         
-        self.assertEqual(parsed["user_id"], 123)
-        self.assertEqual(parsed["action"], "login")
+        self.assertIn("extra_data", parsed)
+        self.assertEqual(parsed["extra_data"]["user_id"], 123)
+        self.assertEqual(parsed["extra_data"]["action"], "login")
 
     def test_format_with_missing_fields(self):
         """Test formatting with missing caller fields."""
@@ -96,7 +99,7 @@ class TestHumanReadableFormatter(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.formatter = HumanReadableFormatter()
+        self.formatter = HumanReadableFormatter(display_extra_fields=True)
 
     def test_format_basic_record(self):
         """Test formatting a basic log record."""
@@ -138,8 +141,10 @@ class TestHumanReadableFormatter(unittest.TestCase):
         record.caller_lineno = 15
         
         # Add extra fields
-        record.user_id = 123
-        record.action = "login"
+        record.extra_data = {
+            "user_id": 123,
+            "action": "login"
+        }
         
         formatted = self.formatter.format(record)
         

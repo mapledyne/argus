@@ -8,7 +8,7 @@ import warnings
 from pathlib import Path
 
 import argus
-from argus.utils import run_debug_functions
+from argus.log_functions import run_debug_functions
 from .test_utils import close_file_handler
 
 
@@ -18,11 +18,10 @@ class TestIntegration(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
-        self.original_log_dir = argus.get_log_directory()
         # Reset logging state for each test
         argus.set_log_directory(None)
         # Clear debug functions between tests
-        from argus.utils import debug_functions
+        from argus.log_functions import debug_functions
         debug_functions.clear()
         # Reset logger level to default
         argus.log_level(argus.ERROR)
@@ -34,7 +33,11 @@ class TestIntegration(unittest.TestCase):
 
     def tearDown(self):
         """Clean up test fixtures."""
-        argus.set_log_directory(self.original_log_dir)
+        # Clean up any file logging
+        from argus.log_functions import _file_handler
+        if _file_handler:
+            _file_handler.close()
+        argus.set_log_directory(None)
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_complete_logging_workflow(self):
@@ -85,10 +88,12 @@ class TestIntegration(unittest.TestCase):
             
             # Check that extra fields are included
             debug_log = next(log for log in logs if log["message"] == "Debug message")
-            self.assertEqual(debug_log["user_id"], 123)
+            self.assertIn("extra_data", debug_log)
+            self.assertEqual(debug_log["extra_data"]["user_id"], 123)
             
             info_log = next(log for log in logs if log["message"] == "Info message")
-            self.assertEqual(info_log["action"], "login")
+            self.assertIn("extra_data", info_log)
+            self.assertEqual(info_log["extra_data"]["action"], "login")
 
     def test_decorators_with_logging(self):
         """Test decorators working with the logging system."""
@@ -236,7 +241,8 @@ class TestIntegration(unittest.TestCase):
             logs = parsed["logs"]
             self.assertEqual(len(logs), 1)
             self.assertEqual(logs[0]["message"], "Test message")
-            self.assertEqual(logs[0]["user_id"], 123)
+            self.assertIn("extra_data", logs[0])
+            self.assertEqual(logs[0]["extra_data"]["user_id"], 123)
 
     def test_module_metadata(self):
         """Test module metadata and version information."""
@@ -260,7 +266,6 @@ class TestIntegration(unittest.TestCase):
         
         # Utility functions
         self.assertTrue(hasattr(argus, 'set_log_directory'))
-        self.assertTrue(hasattr(argus, 'get_log_directory'))
         self.assertTrue(hasattr(argus, 'register_debug_function'))
         self.assertTrue(hasattr(argus, 'max_logs'))
         self.assertTrue(hasattr(argus, 'log_level'))

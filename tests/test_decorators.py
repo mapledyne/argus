@@ -15,12 +15,11 @@ class TestDecorators(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.temp_dir = tempfile.mkdtemp()
-        self.original_log_dir = argus.get_log_directory()
         argus.set_log_directory(self.temp_dir)
 
     def tearDown(self):
         """Clean up test fixtures."""
-        argus.set_log_directory(self.original_log_dir)
+        argus.set_log_directory(None)
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_log_function_call_decorator(self):
@@ -29,7 +28,7 @@ class TestDecorators(unittest.TestCase):
         def test_function(arg1, arg2, kwarg1="default"):
             return arg1 + arg2
 
-        with self.assertLogs('DebugManager', level='DEBUG') as cm:
+        with self.assertLogs('ArgusLogger', level='DEBUG') as cm:
             result = test_function(1, 2, kwarg1="test")
         
         self.assertEqual(result, 3)
@@ -45,7 +44,7 @@ class TestDecorators(unittest.TestCase):
         def failing_function():
             raise ValueError("Test exception")
 
-        with self.assertLogs('DebugManager', level='ERROR') as cm:
+        with self.assertLogs('ArgusLogger', level='ERROR') as cm:
             with self.assertRaises(ValueError):
                 failing_function()
         
@@ -58,7 +57,7 @@ class TestDecorators(unittest.TestCase):
             time.sleep(0.01)  # Small delay to ensure measurable time
             return "done"
 
-        with self.assertLogs('DebugManager', level='INFO') as cm:
+        with self.assertLogs('ArgusLogger', level='INFO') as cm:
             result = slow_function()
 
         self.assertEqual(result, "done")
@@ -70,7 +69,7 @@ class TestDecorators(unittest.TestCase):
         def fast_function():
             return "fast"
 
-        with self.assertLogs('DebugManager', level='INFO') as cm:
+        with self.assertLogs('ArgusLogger', level='INFO') as cm:
             result = fast_function()
 
         self.assertEqual(result, "fast")

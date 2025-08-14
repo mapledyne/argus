@@ -1,18 +1,17 @@
 """Custom handlers for the diagnostics logging system."""
 
 import logging
-import warnings
 
 
 class JSONFileHandler(logging.FileHandler):
     """Custom file handler that writes logs as a single JSON array."""
-    
+
     def __init__(self, filename, mode='a', encoding=None, delay=False):
         super().__init__(filename, mode, encoding, delay)
         self.log_entries = []
         self.state_entries = []
         self._initialize_file()
-    
+
     def _initialize_file(self):
         """Initialize the JSON file with opening bracket."""
         if self.stream is None:
@@ -21,26 +20,23 @@ class JSONFileHandler(logging.FileHandler):
         if self.stream.tell() == 0:
             self.stream.write('{"logs": [\n')
             self.stream.flush()
-    
+
     def emit(self, record):
         """Emit a record as JSON array element."""
-        if not self.stream:
-            # Try to reinitialize the stream if it's None
-            try:
-                self._initialize_file()
-            except Exception:
-                warnings.warn("Trying to emit a record to, but stream is None")
-                return
         try:
+            if not self.stream:
+                # Try to reinitialize the stream if it's None
+                self._initialize_file()
+
             msg = self.format(record)
             if self.log_entries:  # Add comma for all but first entry
                 self.stream.write(',\n')
             self.stream.write(msg)
             self.stream.flush()
             self.log_entries.append(record)
-        except Exception:
+        except Exception:   # pylint: disable=broad-exception-caught
             self.handleError(record)
-    
+
     def close(self):
         """Close the handler and complete the JSON array."""
         if self.stream:
@@ -53,7 +49,7 @@ class JSONFileHandler(logging.FileHandler):
                     self.stream.write(f'{state_entry}\n')
             self.stream.write('],\n"diagnostics_state": ')
             # Import at runtime to avoid circular imports
-            from utils import _diagnostics_state
+            from log_functions import _diagnostics_state  # pylint: disable=C0415
             self.stream.write(f'{_diagnostics_state()}')
             self.stream.write('\n}')
             self.stream.flush()

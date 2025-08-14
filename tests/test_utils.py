@@ -9,6 +9,6 @@ def close_file_handler():
     the JSON structure is complete and can be parsed.
     """
     # Access the internal _file_handler through the module
-    from argus.utils import _file_handler
+    from argus.log_functions import _file_handler
     if _file_handler:
         _file_handler.close()

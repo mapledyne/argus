@@ -49,7 +49,7 @@ class JSONFileHandler(logging.FileHandler):
                     self.stream.write(f'{state_entry}\n')
             self.stream.write('],\n"diagnostics_state": ')
             # Import at runtime to avoid circular imports
-            from log_functions import _diagnostics_state  # pylint: disable=C0415
+            from .log_functions import _diagnostics_state  # pylint: disable=C0415
             self.stream.write(f'{_diagnostics_state()}')
             self.stream.write('\n}')
             self.stream.flush()

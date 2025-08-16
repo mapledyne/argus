@@ -94,33 +94,28 @@ import os
 # =============================================================================
 # Core Logging Functions
 # =============================================================================
-
 from .log_functions import (
+    critical,
     # Basic logging functions
     debug,
-    info,
-    warning,
-    error,
-    critical,
-    log,
-
-    # Decorators
-    log_function_call,
-    log_timing,
     deprecated,
-
-    # Configuration functions
-    set_log_directory,
-    get_log_file,
-    log_level,
-    max_logs,
-
+    disable_console_logging,
     # Console logging control
     enable_console_logging,
-    disable_console_logging,
-
+    error,
+    get_log_file,
+    info,
+    log,
+    # Decorators
+    log_function_call,
+    log_level,
+    log_timing,
+    max_logs,
     # Debug function management
     register_debug_function,
+    # Configuration functions
+    set_log_directory,
+    warning,
 )
 
 # =============================================================================
@@ -128,7 +123,7 @@ from .log_functions import (
 # =============================================================================
 
 # Hide metadata from pydoc since it's not part of the public API
-__version__ = "2.3.0"
+__version__ = "2.3.3"
 """@private"""
 __author__ = "Michael Knowles"
 """@private"""
@@ -164,7 +159,7 @@ _default_log_directory = os.getenv("LOG_DIRECTORY", None)
 _default_max_logs = int(os.getenv("MAX_LOGS", "-1"))
 
 try:
-    import dotenv
+    import dotenv  # type: ignore[import-untyped]
     # use dotenv_values() instead of load_env() to not override anything the
     # main script might want to do.
     _dotenv_vars = dotenv.dotenv_values()
@@ -193,7 +188,7 @@ if _default_log_directory:
 # Public API
 # =============================================================================
 
-__all__ = [
+__all__ = [  # noqa: RUF022
     # Core logging functions
     'debug',
     'info',

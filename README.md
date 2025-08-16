@@ -24,5 +24,12 @@ A handful of config options are available, the most important of which can be
 set via environment variables so you can get the style and levels of logging
 you want without additional code overhead.
 
+## Install
+
+Install using pip if you want to try it:
+```
+pip install argus-logging
+```
+
 Full documentation with the logging commands, function decorators, and
 config options here: [Argus-logging full documentation](https://mapledyne.github.io/argus-logging/)

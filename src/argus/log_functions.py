@@ -1,17 +1,17 @@
 """Core logging functions for the diagnostics system."""
 
 import atexit
-from collections.abc import Callable
-from datetime import datetime
-from functools import wraps
 import json
 import logging
 import os
-from pathlib import Path
-import sys
 import string
+import sys
 import time
 import warnings
+from collections.abc import Callable
+from datetime import datetime
+from functools import wraps
+from pathlib import Path
 
 from .formatters import HumanReadableFormatter, JSONFormatter
 from .handlers import JSONFileHandler
@@ -19,7 +19,7 @@ from .handlers import JSONFileHandler
 # region logging functions
 
 
-def log(level, message, **extra_fields):
+def log(level: int, message: str, **extra_fields) -> None:
     """Basic logging function that handles caller information. Typically
     the other helper fuctions (```debug```, ```info```, etc) are better to use,
     but for custom levels, this function can be used.
@@ -59,7 +59,7 @@ def log(level, message, **extra_fields):
     logger._log(level, message, args=(), extra=extra)  # pylint: disable=W0212
 
 
-def debug(message, **extra_fields):
+def debug(message: str, **extra_fields) -> None:
     """Log a debug message.
 
     Args:
@@ -77,7 +77,7 @@ def debug(message, **extra_fields):
     log(logging.DEBUG, message, **extra_fields)
 
 
-def info(message, **extra_fields):
+def info(message: str, **extra_fields) -> None:
     """Log an info message.
 
     Args:
@@ -95,7 +95,7 @@ def info(message, **extra_fields):
     log(logging.INFO, message, **extra_fields)
 
 
-def warning(message, **extra_fields):
+def warning(message: str, **extra_fields) -> None:
     """Log a warning message.
 
     **Note:**  If warning_type is provided, this message will raise a
@@ -121,7 +121,7 @@ def warning(message, **extra_fields):
         warnings.warn(message, warning_type, stacklevel=3)
 
 
-def error(message, **extra_fields):
+def error(message: str, **extra_fields) -> None:
     """Log an error message.
 
     **Note:**  If error_type is provided, this message will raise an exception
@@ -146,7 +146,7 @@ def error(message, **extra_fields):
         raise error_type(message)
 
 
-def critical(message, **extra_fields):
+def critical(message: str, **extra_fields) -> None:
     """Log a critical message.
 
     **Note:**  If error_type is provided, this message will raise an exception
@@ -543,7 +543,8 @@ def run_debug_functions() -> None:
         if isinstance(output, str):
             output = {"message": output}
         if not isinstance(output, dict):
-            error(f"Debug function {object_name} returned an invalid type: {type(output)}. Function must return a dict or str.")
+            error(f"Debug function {object_name} returned an invalid type: "
+                  f"{type(output)}. Function must return a dict or str.")
             continue
         state_entry = {"object": object_name}
         state_entry.update(output)
@@ -558,7 +559,7 @@ def run_debug_functions() -> None:
 
 def _diagnostics_state() -> str:
     """Get the current diagnostics state as JSON string."""
-    from .__init__ import logger, __version__  # pylint: disable=C0415
+    from .__init__ import __version__, logger  # pylint: disable=C0415
 
     diag_state = {
         "log_file": _log_file,
